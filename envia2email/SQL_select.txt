@@ -1,0 +1,279 @@
+
+select -- 14 email-compra-indicado
+  rc2.nome,
+  rc2.email,
+  cli.cliente,
+  sum(sai.vltotal) As VlSemTroca,
+  nvl((select sum(valor) from pcprest where numtransvenda=sai.numtransvenda and codcli=sai.codcli and codcob='CRED'),0) As  valor,
+  sai.dtsaida
+from pcnfsaid sai
+inner join pcclient cli on cli.codcli=sai.codcli
+left join pcusuari rc2 on rc2.codusur=cli.codusur2
+where rc2.codsupervisor=16 and sai.condvenda=1
+and sai.dtcancel is null and sai.especie='NF'
+group by
+  rc2.nome,
+  rc2.email,
+  cli.cliente,
+  sai.dtsaida,
+  sai.codcli,
+  sai.numtransvenda;
+  
+  Select -- SQL QTD ANOS 2
+    CodCli,
+    Cliente,
+    Fantasia,
+    Email,
+    DtCadastro,
+    Case When (Select Max(Dtsaida) From PcNFSaid Where CondVenda=1 And DtCancel Is Null And Especie='NF' And CodCli=PcCLient.CodCli) > Add_Months(Trunc(Sysdate),-6) Then 'S' Else 'N' End As Ativo,
+    Floor((Trunc(Sysdate) - DtCadastro) /365) As Anos
+  From PcClient;
+
+  
+  Select -- 13 email-1-ano-parceria
+    CodCli,
+    Cliente,
+    Fantasia,
+    DtCadastro,
+    Case When (Select Max(Dtsaida) From PcNFSaid Where CondVenda=1 And DtCancel Is Null And Especie='NF' And CodCli=PcCLient.CodCli) > Add_Months(Trunc(Sysdate),-6) Then 'S' Else 'N' End As Ativo,
+    Floor((Trunc(Sysdate) - DtCadastro) /365) As Anos
+  From PcClient;
+
+
+select -- 12 email-novo-cadastro
+    CodCli,
+    Cliente,
+    Fantasia,
+    Email,
+    DtCadastro,
+    Case When (Select Max(Dtsaida) From PcNFSaid Where CondVenda=1 And DtCancel Is Null And Especie='NF' And CodCli=PcCLient.CodCli) > Add_Months(Trunc(Sysdate),-6) Then 'S' Else 'N' End As Ativo,
+    Floor((Trunc(Sysdate) - DtCadastro) /365) As Anos
+  From PcClient;
+
+
+
+select -- 11 email-agradecer-compra
+ cli.codcli as idcliente,
+  cli.cliente as razaocli,
+  cli.fantasia as fantasiacli,
+  cli.email as email,
+  sum(sai.vltotal) as valorcompra,
+  nvl((select sum(valor) from pcprest where numtransvenda=sai.numtransvenda and codcli=cli.codcli and codcob='CRED'),0) as  creditotroca,
+  sum(sai.vltotal) - nvl((select sum(valor) from pcprest where numtransvenda=sai.numtransvenda and codcli=cli.codcli and codcob='CRED'),0) as valorfinal,
+  sai.dtsaida
+from pcnfsaid sai
+inner join pcclient cli on cli.codcli=sai.codcli
+where sai.condvenda=1 and sai.especie='NF'
+and sai.dtcancel is null
+group by
+  cli.codcli,
+  cli.cliente,
+  cli.email,
+  cli.fantasia,
+  sai.dtsaida,
+  sai.numtransvenda;
+
+
+
+select -- 10 email-cliente-sem-compra-60
+  idcliente,
+  razaocli,
+  fantasiacli,
+  dtultcompra,
+  email,
+  case when dtultcompra = (trunc(sysdate)-25) then 25
+  when dtultcompra = (trunc(sysdate)-45) then 45
+  when dtultcompra = (trunc(sysdate)-60) then 60 else dtultcompra - trunc(sysdate) end as diassemcompra
+from(
+    select
+        codcli as idcliente,
+        cliente as razaocli,
+        fantasia as fantasiacli,
+        email as email,
+        (select max(dtsaida) from pcnfsaid where condvenda=1 and dtcancel is null and especie='NF' and codcli=pcclient.codcli) As dtultcompra
+    from pcclient
+) tabela
+where dtultcompra is not null
+and dtultcompra IN(trunc(sysdate)-60);
+
+select -- 9 email-cliente-sem-compra-45
+  idcliente,
+  razaocli,
+  fantasiacli,
+  dtultcompra,
+  email,
+  case when dtultcompra = (trunc(sysdate)-25) then 25
+  when dtultcompra = (trunc(sysdate)-45) then 45
+  when dtultcompra = (trunc(sysdate)-60) then 60 else dtultcompra - trunc(sysdate) end as diassemcompra
+from(
+    select
+        codcli as idcliente,
+        cliente as razaocli,
+        fantasia as fantasiacli,
+        email as email,
+        (select max(dtsaida) from pcnfsaid where condvenda=1 and dtcancel is null and especie='NF' and codcli=pcclient.codcli) As dtultcompra
+    from pcclient
+) tabela
+where dtultcompra is not null
+and dtultcompra IN(trunc(sysdate)-45);
+
+
+select -- 8 email-cliente-sem-compra-25
+  idcliente,
+  razaocli,
+  fantasiacli,
+  dtultcompra,
+  email,
+  case when dtultcompra = (trunc(sysdate)-25) then 25
+  when dtultcompra = (trunc(sysdate)-45) then 45
+  when dtultcompra = (trunc(sysdate)-60) then 60 else dtultcompra - trunc(sysdate) end as diassemcompra
+from(
+    select
+        codcli as idcliente,
+        cliente as razaocli,
+        fantasia as fantasiacli,
+        email as email,
+        (select max(dtsaida) from pcnfsaid where condvenda=1 and dtcancel is null and especie='NF' and codcli=pcclient.codcli) As dtultcompra
+    from pcclient
+) tabela
+where dtultcompra is not null
+and dtultcompra IN(trunc(sysdate)-25);
+
+
+
+select -- 7 email-feliz-aniversario
+  codcli as idcliente,
+  cliente as razaocli,
+  fantasia as fantasiacli,
+  dtnasc as aniversario,
+  email as emailcli,
+  extract(month from dtnasc) as mesaniv,
+  case when dtnasc=trunc(sysdate) then 'S' else 'N' end as anivhoje
+from pcclient
+where dtnasc is not null;
+
+
+select -- 6 email-cheque-vencido-5
+    cli.codcli as idcliente,
+    cli.cliente as razaocli,
+    cli.fantasia as fantasiacli,
+    cli.email as emailcli,
+    pre.duplic,
+    pre.prest,
+    pre.dtemissao,
+    pre.dtvenc,
+    pre.valor,
+    pre.numbanco,
+    pre.numagencia,
+    pre.numcheque
+from pcclient cli
+inner join pcprest pre on pre.codcli=cli.codcli
+where pre.codcob not in ('DESD','DEVT','DEVP','CANC','CRED','ESTR')
+and pre.dtcancel is null
+and pre.vpago is null
+and pre.codcob in (select codcob from pccob where cobranca like '%CHEQUE%')
+and pre.dtvenc =  trunc(sysdate - 7);
+
+
+select -- 5 email-boleto-vencido-5
+    cli.codcli as idcliente,
+    cli.cliente as razaocli,
+    cli.fantasia as fantasiacli,
+    cli.email as emailcli,
+    pre.duplic,
+    pre.prest,
+    pre.dtemissao,
+    pre.dtvenc,
+    pre.valor,
+    pre.linhadig,
+    pre.codbarra
+from pcclient cli
+inner join pcprest pre on pre.codcli=cli.codcli
+where pre.codcob not in ('DESD','DEVT','DEVP','CANC','CRED','ESTR')
+and pre.dtcancel is null
+and pre.vpago is null
+and pre.dtvenc =  trunc(sysdate - 7);
+
+
+select -- 4 email-nota-hoje
+    cli.codcli as idcliente,
+    cli.cliente as razaocli,
+    cli.fantasia as fantasiacli,
+    cli.email as emailcli,
+    pre.duplic,
+    pre.prest,
+    pre.dtemissao,
+    pre.dtvenc,
+    pre.valor,
+    pre.linhadig,
+    pre.codbarra
+from pcclient cli
+inner join pcprest pre on pre.codcli=cli.codcli
+where pre.codcob not in ('DESD','DEVT','DEVP','CANC','CRED','ESTR')
+and pre.dtcancel is null
+and pre.vpago is null
+and pre.codcob='ABE'
+and pre.dtvenc =  trunc(sysdate);
+
+
+select -- 3 email-boleto-hoje
+    cli.codcli as idcliente,
+    cli.cliente as razaocli,
+    cli.fantasia as fantasiacli,
+    cli.email as emailcli,
+    pre.duplic,
+    pre.prest,
+    pre.dtemissao,
+    pre.dtvenc,
+    pre.valor,
+    pre.linhadig,
+    pre.codbarra
+from pcclient cli
+inner join pcprest pre on pre.codcli=cli.codcli
+where pre.codcob not in ('DESD','DEVT','DEVP','CANC','CRED','ESTR')
+and pre.dtcancel is null
+and pre.vpago is null
+and pre.dtvenc =  trunc(sysdate);
+
+
+
+select -- 2 email-boleto-vencer-5
+    cli.codcli as idcliente,
+    cli.cliente as razaocli,
+    cli.fantasia as fantasiacli,
+    cli.email as emailcli,
+    pre.duplic,
+    pre.prest,
+    pre.dtemissao,
+    pre.dtvenc,
+    pre.valor,
+    pre.linhadig,
+    pre.codbarra
+from pcclient cli
+inner join pcprest pre on pre.codcli=cli.codcli
+where pre.codcob not in ('DESD','DEVT','DEVP','CANC','CRED','ESTR')
+and pre.dtcancel is null
+and pre.vpago is null
+and pre.dtvenc =  trunc(sysdate + 5);
+
+
+
+select -- 1 email-nota-vencer-5
+    cli.codcli as idcliente,
+    cli.cliente as razaocli,
+    cli.fantasia as fantasiacli,
+    cli.email as emailcli,
+    pre.duplic,
+    pre.prest,
+    pre.dtemissao,
+    pre.dtvenc,
+    pre.valor,
+    pre.linhadig,
+    pre.codbarra
+from pcclient cli
+inner join pcprest pre on pre.codcli=cli.codcli
+where pre.codcob not in ('DESD','DEVT','DEVP','CANC','CRED','ESTR')
+and pre.dtcancel is null
+and pre.vpago is null
+and pre.codcob='ABE'
+and pre.dtvenc =  trunc(sysdate + 5);
